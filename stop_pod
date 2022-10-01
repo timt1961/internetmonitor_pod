@@ -1,0 +1,4 @@
+#! /bin/bash
+set -euo pipefail
+
+podman pod stop monitor && podman pod rm monitor

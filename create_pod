@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euo pipefail
+
+# Create the monitor pod
+echo "Creating pod"
+podman pod create --name monitor -p 9090:9090 -p 3030:3000
+
+echo "Starting Prometheus"
+podman run -d --pod monitor --name prometheus \
+      -v /srv/monitor/prometheus_config:/etc/prometheus \
+      -v /srv/monitor/prometheus_data:/prometheus \
+      --restart=always \
+      --network-alias prometheus \
+      prom/prometheus:v2.25.2 \
+      --config.file=/etc/prometheus/prometheus.yml \
+      --storage.tsdb.path=/prometheus \
+      --web.console.libraries=/usr/share/prometheus/console_libraries \
+      --web.console.templates=/usr/share/prometheus/consoles
+
+echo "Starting Grafana"
+podman run -d --pod monitor --name grafana \
+      -v /srv/monitor/grafana_data:/var/lib/grafana \
+      -v /srv/monitor/grafana_config/provisioning:/etc/grafana/provisioning/ \
+      -v /srv/monitor/grafana_config/grafana.ini:/etc/grafana/grafana.ini \
+      --env-file=/srv/monitor/grafana_config/config.monitoring \
+      --restart=always \
+      --network-alias grafana \
+      grafana/grafana 
+
+echo "Starting ping"
+
+podman run -d --pod monitor --name ping \
+	--network-alias ping \
+      -v /srv/monitor/blackbox_config:/config \
+      prom/blackbox-exporter \
+      --config.file=/config/blackbox.yml
+	
+
+echo "Starting speedtest"
+podman run -d --pod monitor --name speedtest \
+      --restart=always \
+      --network-alias speedtest \
+      docker.io/miguelndecarvalho/speedtest-exporter
+      
