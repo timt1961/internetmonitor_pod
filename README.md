@@ -7,7 +7,9 @@ Based on Jeff Geerlings internet monitor
 Runs a grafana frontend, with prometheus, blackbox and speedtest containers
 
 ## Installation
-copy the monitor directory to your desired location. I typically put this in /srv/monitor on my system
+Copy the monitor directory to your desired location. I typically put this in /srv/monitor on my system.
+Add directories `grafana_data` and `prometheus_data` in your copy of the monitor directory. 
+
 Add the nginx snippet to your nginx configuration
 
 Double check the settings in grafana.ini; make sure you have the correct domain name
@@ -34,5 +36,7 @@ systemctl --user daemon-reload
 systemctl --user start pod-monitor
 ```
 
+## Todo
+Write some scripts to automate the above.
 
 
